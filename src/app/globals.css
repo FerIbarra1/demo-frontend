@@ -117,14 +117,56 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Neue Montreal Font */
+.font-neue-montreal {
+  font-family: 'Neue Montreal', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Base font size increased */
+html {
+  font-size: 16px;
+  font-family: 'Neue Montreal', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Neue Montreal', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
   }
-  html {
-    @apply font-sans;
+
+  /* Headings with better sizing */
+  h1 {
+    @apply text-4xl font-bold tracking-tight;
+    line-height: 1.2;
+  }
+  h2 {
+    @apply text-3xl font-bold tracking-tight;
+    line-height: 1.2;
+  }
+  h3 {
+    @apply text-2xl font-semibold;
+    line-height: 1.3;
+  }
+  h4 {
+    @apply text-xl font-semibold;
+    line-height: 1.3;
+  }
+  h5 {
+    @apply text-lg font-medium;
+    line-height: 1.4;
+  }
+  h6 {
+    @apply text-base font-medium;
+    line-height: 1.4;
+  }
+
+  /* Paragraphs */
+  p {
+    @apply text-base;
+    line-height: 1.7;
   }
 }
