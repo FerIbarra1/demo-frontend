@@ -14,16 +14,25 @@ export function useProtectedRoute(options: UseProtectedRouteOptions = {}) {
   const { allowedRoles, redirectTo = "/login" } = options;
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, user, hasRole } = useAuthStore();
+  const { isAuthenticated, user, hasRole, _hasHydrated } = useAuthStore();
 
   useEffect(() => {
-    // Check authentication
+    // Wait for store to hydrate before making any routing decisions
+    if (!_hasHydrated) return;
+
+    // 1. If NOT authenticated:
     if (!isAuthenticated) {
-      router.push(`${redirectTo}?redirect=${encodeURIComponent(pathname)}`);
+      // Avoid redirecting if we are already on login/register/unauthorized
+      const publicPaths = ["/login", "/registro", "/unauthorized"];
+      if (!publicPaths.some(path => pathname?.startsWith(path))) {
+        router.push(`${redirectTo}?redirect=${encodeURIComponent(pathname)}`);
+      }
       return;
     }
 
-    // Check role authorization
+    // 2. If authenticated:
+
+    // Check role authorization if specified
     if (allowedRoles && allowedRoles.length > 0) {
       if (!hasRole(allowedRoles)) {
         router.push("/unauthorized");
@@ -31,19 +40,19 @@ export function useProtectedRoute(options: UseProtectedRouteOptions = {}) {
       }
     }
 
-    // Redirect to role-specific dashboard if on root
-    if (pathname === "/" || pathname === "/login") {
+    // Redirect away from root to appropriate dashboard
+    if (pathname === "/") {
       const targetPath = getDashboardPath(user?.rol);
-      if (targetPath) {
+      if (targetPath && targetPath !== pathname) {
         router.push(targetPath);
       }
     }
-  }, [isAuthenticated, user, pathname, router, allowedRoles, redirectTo, hasRole]);
+  }, [isAuthenticated, user, pathname, router, allowedRoles, redirectTo, hasRole, _hasHydrated]);
 
-  return { isAuthenticated, user };
+  return { isAuthenticated, user, isLoading: !_hasHydrated };
 }
 
-function getDashboardPath(role?: UserRole): string | null {
+export function getDashboardPath(role?: UserRole): string | null {
   switch (role) {
     case "CLIENTE":
       return "/tienda";

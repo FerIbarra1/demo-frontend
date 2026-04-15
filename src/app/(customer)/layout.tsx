@@ -16,24 +16,25 @@ export default function CustomerLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated, user, selectedTiendaId } = useAuthStore();
+  const { isAuthenticated, user, selectedTiendaId, _hasHydrated } = useAuthStore();
   const logout = useLogout();
   const totalItems = useCartStore((state) => state.getTotalItems());
 
   useEffect(() => {
+    if (!_hasHydrated) return;
+
     if (!isAuthenticated) {
       router.push('/login');
       return;
     }
 
-    // Si es cliente y no ha seleccionado tienda, redirigir
     if (user?.rol === 'CLIENTE' && !selectedTiendaId) {
       router.push('/tienda');
       return;
     }
-  }, [isAuthenticated, user, selectedTiendaId, router]);
+  }, [isAuthenticated, user, selectedTiendaId, router, _hasHydrated]);
 
-  if (!isAuthenticated) {
+  if (!_hasHydrated || !isAuthenticated) {
     return null;
   }
 
@@ -78,7 +79,7 @@ export default function CustomerLayout({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={logout}
+                onClick={() => logout.mutate()}
                 className="text-muted-foreground"
               >
                 <User className="mr-2 h-4 w-4" />

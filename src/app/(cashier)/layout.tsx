@@ -2,11 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { CreditCard, List, LogOut } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
-import { useLogout } from '@/lib/hooks';
+import { Navbar } from '@/components/premium';
 import { useAuthStore } from '@/lib/stores/auth';
 
 export default function CashierLayout({
@@ -15,10 +11,11 @@ export default function CashierLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
-  const logout = useLogout();
+  const { isAuthenticated, user, _hasHydrated } = useAuthStore();
 
   useEffect(() => {
+    if (!_hasHydrated) return;
+
     if (!isAuthenticated) {
       router.push('/login');
       return;
@@ -28,53 +25,23 @@ export default function CashierLayout({
       router.push('/unauthorized');
       return;
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, _hasHydrated]);
 
-  if (!isAuthenticated || (user?.rol !== 'CAJERO' && user?.rol !== 'ADMIN')) {
+  if (!_hasHydrated || !isAuthenticated || (user?.rol !== 'CAJERO' && user?.rol !== 'ADMIN')) {
     return null;
   }
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/cajero" className="flex items-center gap-2">
-              <CreditCard className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold">Demo - Cajero</span>
-            </Link>
+      {/* Navbar principal unificado */}
+      <Navbar />
 
-            {/* Navigation */}
-            <nav className="flex items-center gap-4">
-              <Link href="/cajero">
-                <Button variant="ghost" size="sm">
-                  <List className="mr-2 h-4 w-4" />
-                  Pendientes
-                </Button>
-              </Link>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={logout}
-                className="text-muted-foreground"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Salir
-              </Button>
-            </nav>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 bg-muted/30">
+      {/* Main Content - con padding-top para el navbar fixed */}
+      <main className="flex-1 bg-muted/30 pt-20">
         {children}
       </main>
 
-      {/* Footer */}
+      {/* Footer simple */}
       <footer className="bg-white border-t py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-muted-foreground">
           © {new Date().getFullYear()} Demo - Sistema de Cajas

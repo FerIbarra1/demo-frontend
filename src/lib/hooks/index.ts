@@ -1,14 +1,26 @@
 export {
   useLogin,
   useRegister,
+  useKioskToken,
+  useKioskLogin,
+  useUpdateProfile,
+  useChangePassword,
   useLogout,
   useMe,
   useRefreshToken,
+  useAuth,
+  useRequireAuth,
+  useAuthGuard,
 } from './useAuth';
+
+export { useKioskInactivity } from './useKioskInactivity';
 
 export {
   useTiendas,
   useTienda,
+  useEstados,
+  useCiudades,
+  useTiendasFiltradas,
 } from './useTiendas';
 
 export {

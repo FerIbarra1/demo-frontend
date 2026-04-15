@@ -26,10 +26,12 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, _hasHydrated } = useAuthStore();
   const logout = useLogout();
 
   useEffect(() => {
+    if (!_hasHydrated) return;
+
     if (!isAuthenticated) {
       router.push('/login');
       return;
@@ -39,9 +41,9 @@ export default function AdminLayout({
       router.push('/unauthorized');
       return;
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, _hasHydrated]);
 
-  if (!isAuthenticated || user?.rol !== 'ADMIN') {
+  if (!_hasHydrated || !isAuthenticated || user?.rol !== 'ADMIN') {
     return null;
   }
 
@@ -77,7 +79,7 @@ export default function AdminLayout({
           <Button
             variant="ghost"
             className="w-full justify-start text-muted-foreground"
-            onClick={logout}
+            onClick={() => logout.mutate()}
           >
             <LogOut className="mr-2 h-4 w-4" />
             Cerrar Sesión

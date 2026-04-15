@@ -5,6 +5,7 @@ export interface User {
   id: number;
   email: string;
   nombre: string;
+  apellido?: string;
   rol: UserRole;
   tiendaId?: number;
 }
@@ -14,6 +15,14 @@ export interface LoginCredentials {
   email: string;
   password: string;
   tiendaId?: number;
+}
+
+export interface RegisterCredentials {
+  email: string;
+  password: string;
+  nombre: string;
+  apellido?: string;
+  telefono?: string;
 }
 
 export interface AuthResponse {
@@ -38,6 +47,7 @@ export interface ProductoVariante {
   talla: string;
   color: string;
   colorHex: string;
+  imagenColor?: string;
   precio: number;
   stockDisponible: number;
 }
@@ -48,11 +58,14 @@ export interface Producto {
   nombre: string;
   descripcion: string;
   imagenPrincipal: string;
+  imagenSecundaria?: string;
   imagenes: string[];
   categoria: string;
   subcategoria: string;
   precioBase: number;
   precioOferta?: number;
+  esNuevo?: boolean;
+  destacado?: boolean;
   variantes: ProductoVariante[];
 }
 
