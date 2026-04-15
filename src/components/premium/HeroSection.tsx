@@ -1,84 +1,32 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export function HeroSection() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"],
-  });
-
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-
-  // Mouse parallax effect
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 20;
-      const y = (e.clientY / window.innerHeight - 0.5) * 20;
-      setMousePosition({ x, y });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
   return (
-    <section
-      ref={containerRef}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
-    >
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Gradient Orbs */}
-      <motion.div
-        style={{ y }}
-        className="absolute inset-0 pointer-events-none"
-      >
+      <div className="absolute inset-0 pointer-events-none">
         {/* Primary orb */}
-        <motion.div
-          animate={{
-            x: mousePosition.x * 2,
-            y: mousePosition.y * 2,
-          }}
-          transition={{ type: "spring", stiffness: 50, damping: 30 }}
-          className="absolute top-1/4 -right-1/4 w-[600px] h-[600px] lg:w-[800px] lg:h-[800px] bg-accent/20 rounded-full blur-3xl"
-        />
+        <div className="absolute top-1/4 -right-1/4 w-[600px] h-[600px] lg:w-[800px] lg:h-[800px] bg-accent/20 rounded-full blur-3xl" />
 
         {/* Secondary orb */}
-        <motion.div
-          animate={{
-            x: -mousePosition.x * 1.5,
-            y: -mousePosition.y * 1.5,
-          }}
-          transition={{ type: "spring", stiffness: 50, damping: 30 }}
-          className="absolute bottom-1/4 -left-1/4 w-[400px] h-[400px] lg:w-[600px] lg:h-[600px] bg-secondary rounded-full blur-3xl"
-        />
+        <div className="absolute bottom-1/4 -left-1/4 w-[400px] h-[400px] lg:w-[600px] lg:h-[600px] bg-secondary rounded-full blur-3xl" />
 
         {/* Tertiary orb */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-muted/50 rounded-full blur-3xl" />
-      </motion.div>
+      </div>
 
       {/* Noise Texture Overlay */}
       <div className="absolute inset-0 noise-overlay opacity-30 pointer-events-none" />
 
       {/* Content */}
-      <motion.div
-        style={{ opacity }}
-        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20"
-      >
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20">
         {/* Announcement Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
+        <div>
           <Link href="/colecciones">
             <Badge
               variant="secondary"
@@ -88,38 +36,23 @@ export function HeroSection() {
               <ArrowRight className="w-4 h-4" />
             </Badge>
           </Link>
-        </motion.div>
+        </div>
 
         {/* Main Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-medium leading-[0.95] tracking-tight text-balance mb-6"
-        >
+        <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-medium leading-[0.95] tracking-tight text-balance mb-6">
           Estilo que define
           <br />
           <span className="italic">tu esencia</span>
-        </motion.h1>
+        </h1>
 
         {/* Subtitle */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 text-pretty"
-        >
+        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 text-pretty">
           Descubre nuestro catálogo exclusivo de camisetas premium. Diseños
           únicos, calidad excepcional, hechos para quienes valoran lo auténtico.
-        </motion.p>
+        </p>
 
         {/* CTA Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.7 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
-        >
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link href="/catalogo">
             <Button
               size="lg"
@@ -139,15 +72,10 @@ export function HeroSection() {
               Nuestra Historia
             </Button>
           </Link>
-        </motion.div>
+        </div>
 
         {/* Trust Indicators */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-16"
-        >
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-16">
           {/* Rating */}
           <div className="flex items-center gap-2">
             <div className="flex -space-x-1">
@@ -184,26 +112,16 @@ export function HeroSection() {
               +10,000 clientes felices
             </span>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* Scroll Indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1.5 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-      >
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
         <span className="text-xs text-muted-foreground tracking-widest uppercase">
           Scroll
         </span>
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <ChevronDown className="w-5 h-5 text-muted-foreground" />
-        </motion.div>
-      </motion.div>
+        <ChevronDown className="w-5 h-5 text-muted-foreground" />
+      </div>
 
       {/* Gradient fade at bottom */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />

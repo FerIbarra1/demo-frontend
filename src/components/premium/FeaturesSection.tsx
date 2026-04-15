@@ -1,7 +1,5 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
 import { Truck, Shield, RefreshCw, Clock, Package, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -45,48 +43,25 @@ const features = [
 ];
 
 export function FeaturesSection() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(containerRef, { once: true, margin: "-100px" });
-
   return (
-    <section
-      ref={containerRef}
-      className="py-20 lg:py-28 bg-secondary/30"
-    >
+    <section className="py-20 lg:py-28 bg-secondary/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5 }}
-            className="text-sm font-medium tracking-widest uppercase text-muted-foreground mb-4"
-          >
+          <p className="text-sm font-medium tracking-widest uppercase text-muted-foreground mb-4">
             Por qué elegirnos
-          </motion.p>
+          </p>
 
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="font-serif text-3xl md:text-4xl lg:text-5xl font-medium"
-          >
+          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-medium">
             La experiencia Demo
-          </motion.h2>
+          </h2>
         </div>
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          {features.map((feature, index) => (
-            <motion.div
+          {features.map((feature) => (
+            <div
               key={feature.title}
-              initial={{ opacity: 0, y: 30 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{
-                duration: 0.5,
-                delay: 0.1 * (index + 1),
-                ease: [0.16, 1, 0.3, 1],
-              }}
               className="group p-6 lg:p-8 rounded-2xl bg-background border border-border/50 hover:border-border hover:shadow-soft-lg transition-all duration-300"
             >
               {/* Icon */}
@@ -107,7 +82,7 @@ export function FeaturesSection() {
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {feature.description}
               </p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { ShoppingBag, Eye, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,11 +17,9 @@ interface ProductCardProps {
 
 export function ProductCard({
   producto,
-  index = 0,
   onQuickView,
   variant = "default",
 }: ProductCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   const hasDiscount =
@@ -38,20 +35,11 @@ export function ProductCard({
   const price = producto.variantes?.[0]?.precio || producto.precioBase;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        duration: 0.5,
-        delay: index * 0.1,
-        ease: [0.16, 1, 0.3, 1],
-      }}
+    <div
       className={cn(
         "group relative",
         variant === "featured" && "lg:col-span-2 lg:row-span-2"
       )}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <Link href={`/producto/${producto.id}`} className="block">
         {/* Image Container */}
@@ -65,12 +53,10 @@ export function ProductCard({
         >
           {/* Product Image */}
           {producto.imagenPrincipal ? (
-            <motion.img
+            <img
               src={producto.imagenPrincipal}
               alt={producto.nombre}
-              className="w-full h-full object-cover"
-              animate={{ scale: isHovered ? 1.05 : 1 }}
-              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-muted">
@@ -79,12 +65,7 @@ export function ProductCard({
           )}
 
           {/* Overlay on Hover */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: isHovered ? 1 : 0 }}
-            transition={{ duration: 0.3 }}
-            className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"
-          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
@@ -101,30 +82,23 @@ export function ProductCard({
           </div>
 
           {/* Wishlist Button */}
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.8 }}
-            transition={{ duration: 0.2 }}
+          <button
             onClick={(e) => {
               e.preventDefault();
               setIsWishlisted(!isWishlisted);
             }}
             className={cn(
               "absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center",
-              "bg-background/90 backdrop-blur-sm transition-colors hover:bg-background shadow-sm",
-              isWishlisted && "text-red-500"
+              "bg-background/90 backdrop-blur-sm hover:bg-background shadow-sm",
+              "opacity-0 group-hover:opacity-100 transition-opacity duration-200",
+              isWishlisted && "text-red-500 opacity-100"
             )}
           >
             <Heart className={cn("w-4 h-4", isWishlisted && "fill-current")} />
-          </motion.button>
+          </button>
 
           {/* Quick Actions */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 20 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="absolute bottom-4 left-4 right-4 flex gap-2"
-          >
+          <div className="absolute bottom-4 left-4 right-4 flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
             <Button
               size="sm"
               className="flex-1 rounded-full bg-background/90 backdrop-blur-sm hover:bg-background text-foreground shadow-lg"
@@ -136,7 +110,7 @@ export function ProductCard({
               <Eye className="w-4 h-4 mr-2" />
               Vista rápida
             </Button>
-          </motion.div>
+          </div>
         </div>
 
         {/* Product Info */}
@@ -209,6 +183,6 @@ export function ProductCard({
           )}
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }

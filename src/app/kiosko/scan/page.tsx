@@ -45,7 +45,7 @@ export default function KioskScanPage() {
         const config = { fps: 15, qrbox: { width: 280, height: 280 } };
 
         await html5QrCode.start(
-          { facingMode: "user" },
+          { facingMode: { ideal: "environment" } },
           config,
           (decodedText) => {
             if (mountedRef.current) {

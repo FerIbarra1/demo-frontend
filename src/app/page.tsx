@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { ArrowRight, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -73,24 +72,14 @@ export default function HomePage() {
           <div className="container-wide">
             {/* Section Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-              >
+              <div>
                 <span className="label block mb-2">Catálogo Destacado</span>
                 <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl">
                   Productos Favoritos
                 </h2>
-              </motion.div>
+              </div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-              >
+              <div>
                 <Link
                   href="/tienda"
                   className="group inline-flex items-center gap-2 text-sm font-medium hover:text-muted-foreground transition-colors"
@@ -98,7 +87,7 @@ export default function HomePage() {
                   Ver todo el catálogo
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
-              </motion.div>
+              </div>
             </div>
 
             {/* Products Grid */}
@@ -117,11 +106,7 @@ export default function HomePage() {
                 />
               </div>
             ) : isEmpty ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-20"
-              >
+              <div className="text-center py-20">
                 <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-6">
                   <Package className="h-8 w-8 text-muted-foreground" />
                 </div>
@@ -134,7 +119,7 @@ export default function HomePage() {
                 <Button onClick={() => refetch()} variant="outline">
                   Intentar de nuevo
                 </Button>
-              </motion.div>
+              </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {productos.slice(0, 8).map((producto, index) => (
@@ -159,27 +144,15 @@ export default function HomePage() {
           <div className="container-wide relative">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               {/* Image */}
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8 }}
-                className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-muted"
-              >
+              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-muted">
                 <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-transparent" />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <Package className="w-24 h-24 text-muted-foreground/30" />
                 </div>
-              </motion.div>
+              </div>
 
               {/* Content */}
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="lg:pl-8"
-              >
+              <div className="lg:pl-8">
                 <span className="label block mb-4">Nuevo Catálogo</span>
                 <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl mb-6">
                   Verano 2026
@@ -198,7 +171,7 @@ export default function HomePage() {
                     <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </Link>
-              </motion.div>
+              </div>
             </div>
           </div>
         </section>
