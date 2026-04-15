@@ -44,16 +44,54 @@ export default function KioskScanPage() {
 
         const config = { fps: 15, qrbox: { width: 280, height: 280 } };
 
-        await html5QrCode.start(
-          { facingMode: { ideal: "environment" } },
-          config,
-          (decodedText) => {
-            if (mountedRef.current) {
-              handleScanSuccess(decodedText);
-            }
-          },
-          () => {}
-        );
+        const onScan = (decodedText: string) => {
+          if (mountedRef.current) {
+            handleScanSuccess(decodedText);
+          }
+        };
+
+        // Estrategia para elegir la cámara trasera:
+        // 1. Intentar directamente con facingMode "environment" (rápido, no requiere
+        //    permisos previos para enumerar dispositivos).
+        // 2. Si falla, enumerar cámaras y buscar una etiquetada como trasera.
+        // 3. Si no hay match, usar la primera disponible.
+        // 4. Como último recurso, caer a la cámara frontal.
+        try {
+          await html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            onScan,
+            () => {}
+          );
+        } catch (envErr) {
+          console.warn("facingMode environment falló, enumerando cámaras...", envErr);
+
+          const cameras = await Html5Qrcode.getCameras();
+          if (!cameras || cameras.length === 0) {
+            throw new Error("No se encontraron cámaras disponibles");
+          }
+
+          const backCamera =
+            cameras.find((c) => /back|rear|trasera|environment/i.test(c.label)) ||
+            cameras[cameras.length - 1]; // en móviles la trasera suele ser la última
+
+          try {
+            await html5QrCode.start(
+              backCamera.id,
+              config,
+              onScan,
+              () => {}
+            );
+          } catch (backErr) {
+            console.warn("Cámara trasera falló, usando frontal como fallback", backErr);
+            await html5QrCode.start(
+              { facingMode: "user" },
+              config,
+              onScan,
+              () => {}
+            );
+          }
+        }
 
         if (mountedRef.current) {
           setCameraActive(true);
