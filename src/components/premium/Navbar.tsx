@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -19,16 +19,13 @@ import {
   Store,
   LogOut,
   Package,
-  ClipboardList,
   CreditCard,
   LayoutDashboard,
-  Users,
-  BarChart3,
   Boxes,
+  ShoppingCart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
   SheetContent,
@@ -41,7 +38,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCartStore } from "@/lib/stores/cart";
 import { useAuthStore } from "@/lib/stores/auth";
 import { useKioskStore } from "@/lib/stores/kioskStore";
-import { UserMenu, RoleBasedUserMenu } from "./UserMenu";
+import { RoleBasedUserMenu } from "./UserMenu";
 import { StoreLocationModal } from "./StoreLocationModal";
 import { useTienda } from "@/lib/hooks";
 import { UserRole } from "@/lib/types";
@@ -171,16 +168,20 @@ export function Navbar() {
   const { isAuthenticated, user, selectedTiendaId } = useAuthStore();
   const { isKioskMode, tiendaNombre: kioskTiendaNombre } = useKioskStore();
   const { data: currentTienda } = useTienda(selectedTiendaId || 0);
-  const {
-    items: cartItems,
-    getTotalItems,
-    getTotalPrice,
-    removeItem,
-    updateQuantity,
-  } = useCartStore();
 
-  const totalItems = getTotalItems();
-  const totalPrice = getTotalPrice();
+  // Atomic selectors for cart to avoid re-renders on unrelated cart changes
+  const cartItems = useCartStore((state) => state.items);
+  const removeItem = useCartStore((state) => state.removeItem);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+
+  const totalItems = useMemo(
+    () => cartItems.reduce((total, item) => total + item.cantidad, 0),
+    [cartItems]
+  );
+  const totalPrice = useMemo(
+    () => cartItems.reduce((total, item) => total + (item.variante?.precio || 0) * item.cantidad, 0),
+    [cartItems]
+  );
 
   // Determine user role and config
   const userRole = user?.rol || null;
@@ -408,14 +409,11 @@ export function Navbar() {
                     )}
                     aria-label="Carrito de compras"
                   >
-                    <ShoppingBag className="w-5 h-5" />
+                    <ShoppingCart className="w-5 h-5 cursor-pointer" />
                     {totalItems > 0 && (
-                      <Badge
-                        variant="default"
-                        className="absolute -top-0.5 -right-0.5 h-5 w-5 flex items-center justify-center p-0 text-[10px] font-medium bg-foreground text-background"
-                      >
+                      <span className="absolute -top-0.5 -right-0.5 h-5 w-5 flex items-center justify-center text-[10px] font-medium bg-foreground text-background rounded-full">
                         {totalItems > 9 ? "9+" : totalItems}
-                      </Badge>
+                      </span>
                     )}
                   </SheetTrigger>
 
@@ -448,7 +446,7 @@ export function Navbar() {
                           </div>
                         </ScrollArea>
 
-                        <div className="border-t pt-4 mt-auto space-y-4">
+                        <div className="border-t pt-4 mt-auto space-y-4 p-4">
                           <div className="flex items-center justify-between">
                             <span className="text-muted-foreground">
                               Subtotal

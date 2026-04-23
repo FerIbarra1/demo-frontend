@@ -14,7 +14,9 @@ export function useProtectedRoute(options: UseProtectedRouteOptions = {}) {
   const { allowedRoles, redirectTo = "/login" } = options;
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, user, hasRole, _hasHydrated } = useAuthStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
+  const _hasHydrated = useAuthStore((state) => state._hasHydrated);
 
   useEffect(() => {
     // Wait for store to hydrate before making any routing decisions
@@ -33,8 +35,8 @@ export function useProtectedRoute(options: UseProtectedRouteOptions = {}) {
     // 2. If authenticated:
 
     // Check role authorization if specified
-    if (allowedRoles && allowedRoles.length > 0) {
-      if (!hasRole(allowedRoles)) {
+    if (allowedRoles && allowedRoles.length > 0 && user) {
+      if (!allowedRoles.includes(user.rol)) {
         router.push("/unauthorized");
         return;
       }
@@ -47,7 +49,7 @@ export function useProtectedRoute(options: UseProtectedRouteOptions = {}) {
         router.push(targetPath);
       }
     }
-  }, [isAuthenticated, user, pathname, router, allowedRoles, redirectTo, hasRole, _hasHydrated]);
+  }, [isAuthenticated, user, pathname, router, allowedRoles, redirectTo, _hasHydrated]);
 
   return { isAuthenticated, user, isLoading: !_hasHydrated };
 }
@@ -55,7 +57,7 @@ export function useProtectedRoute(options: UseProtectedRouteOptions = {}) {
 export function getDashboardPath(role?: UserRole): string | null {
   switch (role) {
     case "CLIENTE":
-      return "/tienda";
+      return "/catalogo";
     case "BODEGA":
       return "/bodega";
     case "CAJERO":

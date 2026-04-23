@@ -179,8 +179,7 @@ export default function MisPedidosPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FDFBF7]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="mb-8">
             <div className="h-8 w-48 bg-muted rounded animate-pulse mb-2" />
             <div className="h-4 w-64 bg-muted rounded animate-pulse" />
@@ -191,27 +190,23 @@ export default function MisPedidosPage() {
             ))}
           </div>
         </div>
-      </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#FDFBF7]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <ErrorDisplay
             error={error as Error}
             message="No se pudieron cargar tus pedidos. Por favor intenta de nuevo."
             onRetry={() => refetch()}
           />
         </div>
-      </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7]">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -378,7 +373,6 @@ export default function MisPedidosPage() {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
   );
 }
 

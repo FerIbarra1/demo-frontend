@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Globe, Mail, MessageCircle, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,10 +10,10 @@ const footerLinks = {
   shop: {
     title: "Tienda",
     links: [
-      { label: "Novedades", href: "/tienda?sort=newest" },
-      { label: "Más vendidos", href: "/tienda?sort=bestsellers" },
+      { label: "Novedades", href: "/catalogo?sort=newest" },
+      { label: "Más vendidos", href: "/catalogo?sort=bestsellers" },
       { label: "Colecciones", href: "/colecciones" },
-      { label: "Ofertas", href: "/tienda?sale=true" },
+      { label: "Ofertas", href: "/catalogo?sale=true" },
     ],
   },
   company: {
@@ -43,7 +44,11 @@ const socialLinks = [
 ];
 
 export function Footer() {
-  const currentYear = new Date().getFullYear();
+  const [currentYear, setCurrentYear] = useState(2026);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
 
   return (
     <footer className="border-t border-border bg-secondary/20">

@@ -26,9 +26,13 @@ export const catalogoApi = {
   getProductos: async (filters: CatalogoFiltros): Promise<Producto[]> => {
     const params = new URLSearchParams();
     params.append('tiendaId', filters.tiendaId.toString());
-    if (filters.talla) params.append('talla', filters.talla);
-    if (filters.color) params.append('color', filters.color);
     if (filters.categoria) params.append('categoria', filters.categoria);
+    if (filters.busqueda) params.append('busqueda', filters.busqueda);
+    if (filters.corridaId) params.append('corridaId', filters.corridaId.toString());
+    if (filters.colorId) params.append('colorId', filters.colorId.toString());
+    if (filters.soloDisponibles !== undefined) params.append('soloDisponibles', filters.soloDisponibles.toString());
+    if (filters.pagina) params.append('pagina', filters.pagina.toString());
+    if (filters.limite) params.append('limite', filters.limite.toString());
 
     const { data } = await api.get<CatalogoResponse>(`/catalogo?${params}`);
     // El backend retorna { data: [...], meta: {...} }

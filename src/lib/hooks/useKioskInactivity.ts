@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/auth';
 import { useKioskStore } from '@/lib/stores/kioskStore';
@@ -13,30 +13,13 @@ export function useKioskInactivity(timeoutMs = DEFAULT_TIMEOUT) {
   const pathname = usePathname();
   const { isKioskMode } = useKioskStore();
   const { isAuthenticated, logout } = useAuthStore();
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stateRef = useRef({ isKioskMode, isAuthenticated, pathname, logout, router });
 
-  const resetTimer = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-
-    if (isKioskMode && isAuthenticated) {
-      timerRef.current = setTimeout(() => {
-        handleTimeout();
-      }, timeoutMs);
-    }
-  };
-
-  const handleTimeout = () => {
-    // Solo cerrar sesión si no estamos ya en la página de bienvenida o login
-    const publicPaths = ['/kiosko/welcome', '/kiosko/scan', '/login'];
-    if (publicPaths.some(path => pathname?.startsWith(path))) return;
-
-    toast.info("Sesión cerrada por inactividad", {
-      description: "Vuelve a escanear tu QR para continuar."
-    });
-
-    logout(false); // Logout sin redirección automática de window.location
-    router.push('/kiosko/welcome');
-  };
+  // Keep latest values in ref without causing re-subscription
+  useEffect(() => {
+    stateRef.current = { isKioskMode, isAuthenticated, pathname, logout, router };
+  });
 
   useEffect(() => {
     if (!isKioskMode || !isAuthenticated) {
@@ -44,32 +27,37 @@ export function useKioskInactivity(timeoutMs = DEFAULT_TIMEOUT) {
       return;
     }
 
-    const events = [
-      'mousedown',
-      'mousemove',
-      'keypress',
-      'scroll',
-      'touchstart',
-      'click'
-    ];
+    const handleTimeout = () => {
+      const state = stateRef.current;
+      const publicPaths = ['/kiosko/welcome', '/kiosko/scan', '/login'];
+      if (publicPaths.some(path => state.pathname?.startsWith(path))) return;
 
+      toast.info("Sesión cerrada por inactividad", {
+        description: "Vuelve a escanear tu QR para continuar."
+      });
+
+      state.logout(false);
+      state.router.push('/kiosko/welcome');
+    };
+
+    const resetTimer = () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (stateRef.current.isKioskMode && stateRef.current.isAuthenticated) {
+        timerRef.current = setTimeout(handleTimeout, timeoutMs);
+      }
+    };
+
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
     const handleEvent = () => resetTimer();
 
-    // Inicializar timer
     resetTimer();
-
-    // Agregar listeners
-    events.forEach(event => {
-      window.addEventListener(event, handleEvent);
-    });
+    events.forEach(event => window.addEventListener(event, handleEvent));
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
-      events.forEach(event => {
-        window.removeEventListener(event, handleEvent);
-      });
+      events.forEach(event => window.removeEventListener(event, handleEvent));
     };
-  }, [isKioskMode, isAuthenticated, pathname]);
+  }, [isKioskMode, isAuthenticated, timeoutMs]);
 
-  return { resetTimer };
+  return { resetTimer: () => {} };
 }

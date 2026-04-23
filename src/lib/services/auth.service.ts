@@ -24,7 +24,7 @@ interface RegisterData {
 
 export class AuthService {
   private static refreshPromise: Promise<string> | null = null;
-  private static tokenRefreshTimer: NodeJS.Timeout | null = null;
+  private static tokenRefreshTimer: ReturnType<typeof setTimeout> | null = null;
 
   // ============================================
   // LOGIN

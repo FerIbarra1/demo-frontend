@@ -104,15 +104,17 @@ export default function KioskScanPage() {
       }
     };
 
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     if (isKioskMode && !isPending && !isSuccess) {
       // Pequeño delay para asegurar que el DOM esté listo
-      const timer = setTimeout(startScanner, 500);
-      return () => clearTimeout(timer);
+      timeoutId = setTimeout(startScanner, 500);
     }
 
     return () => {
+      if (timeoutId) clearTimeout(timeoutId);
       if (scannerRef.current?.isScanning) {
-        scannerRef.current.stop().catch(console.error);
+        scannerRef.current.stop().catch(() => {});
       }
     };
   }, [isKioskMode, isPending, isSuccess]);

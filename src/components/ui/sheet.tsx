@@ -19,7 +19,11 @@ function SheetTrigger({ asChild, children, ...props }: SheetPrimitive.Trigger.Pr
       </SheetPrimitive.Trigger>
     )
   }
-  return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />
+  return (
+    <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props}>
+      {children}
+    </SheetPrimitive.Trigger>
+  )
 }
 
 function SheetClose({ ...props }: SheetPrimitive.Close.Props) {

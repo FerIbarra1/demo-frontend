@@ -21,6 +21,7 @@ export function ProductCard({
   variant = "default",
 }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const hasDiscount =
     producto.precioOferta &&
@@ -28,11 +29,15 @@ export function ProductCard({
 
   const discountPercentage = hasDiscount
     ? Math.round(
-        (1 - Number(producto.precioOferta) / Number(producto.precioBase)) * 100
-      )
+      (1 - Number(producto.precioOferta) / Number(producto.precioBase)) * 100
+    )
     : 0;
 
   const price = producto.variantes?.[0]?.precio || producto.precioBase;
+
+  // Determinar imágenes disponibles
+  const imagenPrincipal = producto.imagenes?.[0];
+  const imagenSecundaria = producto.imagenes?.[1]; // Segunda imagen del array
 
   return (
     <div
@@ -40,6 +45,8 @@ export function ProductCard({
         "group relative",
         variant === "featured" && "lg:col-span-2 lg:row-span-2"
       )}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <Link href={`/producto/${producto.id}`} className="block">
         {/* Image Container */}
@@ -51,17 +58,32 @@ export function ProductCard({
             variant === "compact" && "aspect-square"
           )}
         >
-          {/* Product Image */}
-          {producto.imagenPrincipal ? (
+          {/* Product Image - Principal */}
+          {imagenPrincipal ? (
             <img
-              src={producto.imagenPrincipal}
+              src={imagenPrincipal}
               alt={producto.nombre}
-              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+              className={cn(
+                "w-full h-full object-cover transition-all duration-500 ease-out",
+                !imagenSecundaria && "group-hover:scale-105"
+              )}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-muted">
               <ShoppingBag className="w-12 h-12 text-muted-foreground/30" />
             </div>
+          )}
+
+          {/* Product Image - Secundaria (hover) */}
+          {imagenSecundaria && (
+            <img
+              src={imagenSecundaria}
+              alt={`${producto.nombre} - vista alternativa`}
+              className={cn(
+                "absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-out",
+                isHovered ? "opacity-100" : "opacity-0"
+              )}
+            />
           )}
 
           {/* Overlay on Hover */}

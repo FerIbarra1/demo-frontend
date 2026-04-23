@@ -38,49 +38,58 @@ export function StoreLocationModal({ isOpen, onComplete }: StoreLocationModalPro
   // Load estados on mount
   useEffect(() => {
     if (isOpen) {
-      loadEstados();
+      const controller = new AbortController();
+      loadEstados(controller.signal);
+      return () => controller.abort();
     }
   }, [isOpen]);
 
-  const loadEstados = async () => {
+  const loadEstados = async (signal?: AbortSignal) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_URL}/tiendas/estados`);
+      const res = await fetch(`${API_URL}/tiendas/estados`, { signal });
       const data = await res.json();
       // Ensure data is an array
       setEstados(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error('Error loading estados:', error);
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Error loading estados:', error);
+      }
       setEstados([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loadCiudades = async (estado: string) => {
+  const loadCiudades = async (estado: string, signal?: AbortSignal) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_URL}/tiendas/ciudades?estado=${encodeURIComponent(estado)}`);
+      const res = await fetch(`${API_URL}/tiendas/ciudades?estado=${encodeURIComponent(estado)}`, { signal });
       const data = await res.json();
       setCiudades(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error('Error loading ciudades:', error);
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Error loading ciudades:', error);
+      }
       setCiudades([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loadTiendas = async (estado: string, ciudad: string) => {
+  const loadTiendas = async (estado: string, ciudad: string, signal?: AbortSignal) => {
     setIsLoading(true);
     try {
       const res = await fetch(
-        `${API_URL}/tiendas?estado=${encodeURIComponent(estado)}&ciudad=${encodeURIComponent(ciudad)}`
+        `${API_URL}/tiendas?estado=${encodeURIComponent(estado)}&ciudad=${encodeURIComponent(ciudad)}`,
+        { signal }
       );
       const data = await res.json();
       setTiendas(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error('Error loading tiendas:', error);
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Error loading tiendas:', error);
+      }
       setTiendas([]);
     } finally {
       setIsLoading(false);

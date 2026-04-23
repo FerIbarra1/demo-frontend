@@ -77,13 +77,14 @@ export function useRegister() {
 // ============================================
 
 export function useKioskToken() {
+  const userId = useAuthStore((state) => state.user?.id);
   return useQuery({
-    queryKey: ["kiosk-token"],
+    queryKey: ["kiosk-token", userId],
     queryFn: () => authApi.getKioskToken(),
     refetchInterval: 4 * 60 * 1000, // Refrescar cada 4 min (antes de que expire a los 5)
     staleTime: 4 * 60 * 1000,
     retry: 1,
-    enabled: useAuthStore.getState().isAuthenticated,
+    enabled: !!userId,
   });
 }
 

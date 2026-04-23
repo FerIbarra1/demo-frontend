@@ -58,7 +58,6 @@ export interface Producto {
   nombre: string;
   descripcion: string;
   imagenPrincipal: string;
-  imagenSecundaria?: string;
   imagenes: string[];
   categoria: string;
   subcategoria: string;
@@ -128,9 +127,13 @@ export interface ApiResponse<T> {
 // Filtros catálogo
 export interface CatalogoFiltros {
   tiendaId: number;
-  talla?: string;
-  color?: string;
   categoria?: string;
+  busqueda?: string;
+  corridaId?: number;
+  colorId?: number;
+  soloDisponibles?: boolean;
+  pagina?: number;
+  limite?: number;
 }
 
 // Helper para convertir valores numéricos que vienen como string del backend

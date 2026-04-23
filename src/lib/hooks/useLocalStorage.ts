@@ -3,17 +3,30 @@
 import { useState, useEffect, useCallback } from 'react';
 
 export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => void] {
-  // Estado para almacenar el valor
-  const [storedValue, setStoredValue] = useState<T>(initialValue);
-  const [isMounted, setIsMounted] = useState(false);
+  // Estado para almacenar el valor - leer localStorage en inicializador para evitar flash
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    if (typeof window === 'undefined') return initialValue;
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch {
+      return initialValue;
+    }
+  });
 
-  // Efecto para cargar el valor inicial solo en el cliente
+  // Sync with localStorage on mount (for SSR hydration safety)
   useEffect(() => {
-    setIsMounted(true);
     try {
       const item = window.localStorage.getItem(key);
       if (item) {
-        setStoredValue(JSON.parse(item));
+        const parsed = JSON.parse(item);
+        setStoredValue((prev) => {
+          // Only update if different to avoid loops
+          if (JSON.stringify(prev) !== JSON.stringify(parsed)) {
+            return parsed;
+          }
+          return prev;
+        });
       }
     } catch (error) {
       console.error(`Error loading localStorage key "${key}":`, error);
@@ -35,8 +48,7 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T)
     [key]
   );
 
-  // Retornar initialValue durante SSR, storedValue después de montar
-  return [isMounted ? storedValue : initialValue, setValue];
+  return [storedValue, setValue];
 }
 
 export function getLocalStorageItem(key: string): string | null {

@@ -20,6 +20,7 @@ import { useAuth, useCatalogo, useKioskToken } from "@/lib/hooks";
 import { useKioskStore } from "@/lib/stores/kioskStore";
 import { Producto } from "@/lib/types";
 import { useRouter } from "next/navigation";
+import { Carousel } from "@/components/premium/Carousel";
 
 export default function HomePage() {
   const router = useRouter();
@@ -81,7 +82,7 @@ export default function HomePage() {
 
               <div>
                 <Link
-                  href="/tienda"
+                  href="/catalogo"
                   className="group inline-flex items-center gap-2 text-sm font-medium hover:text-muted-foreground transition-colors"
                 >
                   Ver todo el catálogo
@@ -136,7 +137,9 @@ export default function HomePage() {
         </section>
 
         {/* Features Section */}
-        <FeaturesSection />
+        {/* <FeaturesSection /> */}
+
+        <Carousel />
 
         {/* Collection Banner */}
         <section className="section-padding-lg relative overflow-hidden">
@@ -145,10 +148,11 @@ export default function HomePage() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               {/* Image */}
               <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-muted">
-                <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-transparent" />
+                <img src="/images/hero-3.jpg" alt="Verano2026" className="w-full h-full object-cover" />
+                {/* <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-transparent" />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <Package className="w-24 h-24 text-muted-foreground/30" />
-                </div>
+                </div> */}
               </div>
 
               {/* Content */}

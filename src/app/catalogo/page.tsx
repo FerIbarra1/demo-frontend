@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -35,83 +35,90 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 import { SkeletonCard } from '@/components/common/SkeletonGrid';
 import { ErrorDisplay, useSafeData, normalizeProducto } from '@/components/common/ErrorBoundary';
-import { useTiendas, useBuscarProductos, useCatalogo } from '@/lib/hooks';
+import { useTiendas, useCatalogo } from '@/lib/hooks';
 import { useAuthStore } from '@/lib/stores/auth';
 import { Producto } from '@/lib/types';
-import { ProductQuickView } from '@/components/product/ProductQuickView';
 import { StoreLocationModal, Navbar, Footer } from '@/components/premium';
 
-// Categorías basadas en datos reales
-const categorias = [
-  { id: 'all', nombre: 'Todas', count: 156 },
-  { id: 'camisetas', nombre: 'Camisetas', count: 68 },
-  { id: 'polos', nombre: 'Polos', count: 34 },
-  { id: 'camisas', nombre: 'Camisas', count: 28 },
-  { id: 'deportivas', nombre: 'Deportivas', count: 26 }
+// Categorías basadas en los datos reales del backend
+const CATEGORIAS = [
+  { id: 'all', nombre: 'Todas' },
+  { id: 'Camisetas', nombre: 'Camisetas' },
+  { id: 'Polos', nombre: 'Polos' },
 ];
 
-const tallas = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+const TALLAS = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 // Componente que usa useSearchParams envuelto en Suspense
 function CatalogoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryFromUrl = searchParams.get('q') || '';
+  const categoriaFromUrl = searchParams.get('categoria') || 'all';
 
   const { selectedTiendaId } = useAuthStore();
   const { data: tiendas, isLoading: isLoadingTiendas } = useTiendas();
 
-  const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isStoreModalOpen, setIsStoreModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(queryFromUrl);
   const [viewMode, setViewMode] = useState<'grid' | 'large'>('grid');
-  const [selectedCategoria, setSelectedCategoria] = useState('all');
+  const [selectedCategoria, setSelectedCategoria] = useState(categoriaFromUrl);
   const [selectedTallas, setSelectedTallas] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState([0, 100]);
+  const [priceRange, setPriceRange] = useState([0, 1000]);
   const [sortBy, setSortBy] = useState('relevancia');
   const [favorites, setFavorites] = useState<number[]>([]);
 
-  // Si hay query en URL, usarlo para buscar
+  // Tienda ID para la API
   const tiendaId = selectedTiendaId || (tiendas?.[0]?.id ?? 0);
-  const { data: productosData, isLoading, error, refetch } = useBuscarProductos(
+
+  // Fetch products from backend with filters
+  const categoriaParaApi = selectedCategoria !== 'all' ? selectedCategoria : undefined;
+  const busquedaParaApi = queryFromUrl || undefined;
+
+  const { data: productosData, isLoading, error, refetch } = useCatalogo({
     tiendaId,
-    queryFromUrl
-  );
+    ...(categoriaParaApi && { categoria: categoriaParaApi }),
+    ...(busquedaParaApi && { busqueda: busquedaParaApi }),
+    soloDisponibles: true,
+    limite: 100,
+  });
 
   const { items: rawProductos, isEmpty } = useSafeData<Producto>(productosData);
   const productos = rawProductos.map(normalizeProducto).filter(Boolean) as Producto[];
 
-  const handleOpenProduct = (producto: Producto) => {
-    setSelectedProduct(producto);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setTimeout(() => setSelectedProduct(null), 200);
-  };
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    const params = new URLSearchParams();
     if (searchQuery.trim()) {
-      router.push(`/catalogo?q=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      router.push('/catalogo');
+      params.set('q', searchQuery.trim());
     }
+    if (selectedCategoria !== 'all') {
+      params.set('categoria', selectedCategoria);
+    }
+    router.push(`/catalogo?${params.toString()}`);
+  };
+
+  const handleCategoriaChange = (categoriaId: string) => {
+    setSelectedCategoria(categoriaId);
+    const params = new URLSearchParams(searchParams.toString());
+    if (categoriaId !== 'all') {
+      params.set('categoria', categoriaId);
+    } else {
+      params.delete('categoria');
+    }
+    // Keep search query if exists
+    router.push(`/catalogo?${params.toString()}`);
   };
 
   const clearSearch = () => {
     setSearchQuery('');
     setSelectedCategoria('all');
     setSelectedTallas([]);
-    setPriceRange([0, 100]);
+    setPriceRange([0, 1000]);
     router.push('/catalogo');
   };
 
@@ -127,41 +134,47 @@ function CatalogoContent() {
     );
   };
 
-  // Filtrar productos
-  const productosFiltrados = productos.filter(producto => {
-    const matchesCategoria = selectedCategoria === 'all' ||
-      producto.categoria?.toLowerCase() === selectedCategoria.toLowerCase();
+  // Client-side filtering for talla, precio
+  const productosFiltrados = useMemo(() => {
+    let result = productos;
 
-    // Para tallas, verificar en las variantes
-    const matchesTalla = selectedTallas.length === 0 ||
-      producto.variantes?.some(v => selectedTallas.includes(v.talla));
-
-    // Para precio, usar el precio base o el de la primera variante
-    const precio = producto.variantes?.[0]?.precio || producto.precioBase || 0;
-    const matchesPrice = precio >= priceRange[0] && precio <= priceRange[1];
-
-    return matchesCategoria && matchesTalla && matchesPrice;
-  });
-
-  // Ordenar productos
-  const productosOrdenados = [...productosFiltrados].sort((a, b) => {
-    switch (sortBy) {
-      case 'precio-asc': {
-        const priceA = a.variantes?.[0]?.precio || a.precioBase || 0;
-        const priceB = b.variantes?.[0]?.precio || b.precioBase || 0;
-        return priceA - priceB;
-      }
-      case 'precio-desc': {
-        const priceA = a.variantes?.[0]?.precio || a.precioBase || 0;
-        const priceB = b.variantes?.[0]?.precio || b.precioBase || 0;
-        return priceB - priceA;
-      }
-      case 'nuevos':
-        return (b.esNuevo ? 1 : 0) - (a.esNuevo ? 1 : 0);
-      default:
-        return 0;
+    // Filter by talla (client-side)
+    if (selectedTallas.length > 0) {
+      result = result.filter(producto =>
+        producto.variantes?.some(v => selectedTallas.includes(v.talla))
+      );
     }
-  });
+
+    // Filter by price range (client-side)
+    result = result.filter(producto => {
+      const precio = producto.variantes?.[0]?.precio || producto.precioBase || 0;
+      return precio >= priceRange[0] && precio <= priceRange[1];
+    });
+
+    return result;
+  }, [productos, selectedTallas, priceRange]);
+
+  // Sort products (client-side)
+  const productosOrdenados = useMemo(() => {
+    return [...productosFiltrados].sort((a, b) => {
+      switch (sortBy) {
+        case 'precio-asc': {
+          const priceA = a.variantes?.[0]?.precio || a.precioBase || 0;
+          const priceB = b.variantes?.[0]?.precio || b.precioBase || 0;
+          return Number(priceA) - Number(priceB);
+        }
+        case 'precio-desc': {
+          const priceA = a.variantes?.[0]?.precio || a.precioBase || 0;
+          const priceB = b.variantes?.[0]?.precio || b.precioBase || 0;
+          return Number(priceB) - Number(priceA);
+        }
+        case 'nuevos':
+          return (b.esNuevo ? 1 : 0) - (a.esNuevo ? 1 : 0);
+        default:
+          return 0;
+      }
+    });
+  }, [productosFiltrados, sortBy]);
 
   const tiendaActual = tiendas?.find(t => t.id === selectedTiendaId);
 
@@ -227,7 +240,7 @@ function CatalogoContent() {
                 {searchQuery && (
                   <button
                     type="button"
-                    onClick={clearSearch}
+                    onClick={() => { setSearchQuery(''); router.push('/catalogo'); }}
                     className="absolute right-5 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-stone-100 transition-colors"
                   >
                     <X className="h-4 w-4 text-muted-foreground" />
@@ -273,10 +286,10 @@ function CatalogoContent() {
         <section className="border-y border-stone-200 bg-white/50 sticky top-16 z-30 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-2 py-4 overflow-x-auto scrollbar-hide">
-              {categorias.map((cat) => (
+              {CATEGORIAS.map((cat) => (
                 <button
                   key={cat.id}
-                  onClick={() => setSelectedCategoria(cat.id)}
+                  onClick={() => handleCategoriaChange(cat.id)}
                   className={cn(
                     "flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all",
                     selectedCategoria === cat.id
@@ -285,14 +298,6 @@ function CatalogoContent() {
                   )}
                 >
                   {cat.nombre}
-                  <span className={cn(
-                    "text-xs px-2 py-0.5 rounded-full",
-                    selectedCategoria === cat.id
-                      ? "bg-background/20"
-                      : "bg-white"
-                  )}>
-                    {cat.count}
-                  </span>
                 </button>
               ))}
             </div>
@@ -326,7 +331,7 @@ function CatalogoContent() {
                       <div>
                         <h4 className="font-medium mb-4">Tallas</h4>
                         <div className="flex flex-wrap gap-2">
-                          {tallas.map((talla) => (
+                          {TALLAS.map((talla) => (
                             <button
                               key={talla}
                               onClick={() => toggleTalla(talla)}
@@ -349,29 +354,13 @@ function CatalogoContent() {
                         <Slider
                           value={priceRange}
                           onValueChange={(value) => setPriceRange(value as number[])}
-                          max={100}
-                          step={5}
+                          max={1000}
+                          step={10}
                           className="mb-4"
                         />
                         <div className="flex items-center justify-between text-sm text-muted-foreground">
                           <span>${priceRange[0]}</span>
                           <span>${priceRange[1]}</span>
-                        </div>
-                      </div>
-
-                      {/* Otros filtros */}
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <Checkbox id="ofertas" />
-                          <Label htmlFor="ofertas" className="text-sm cursor-pointer">
-                            Solo ofertas
-                          </Label>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Checkbox id="nuevos" />
-                          <Label htmlFor="nuevos" className="text-sm cursor-pointer">
-                            Productos nuevos
-                          </Label>
                         </div>
                       </div>
                     </div>
@@ -431,7 +420,7 @@ function CatalogoContent() {
                       <ChevronDown className="w-4 h-4" />
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      {tallas.map((talla) => (
+                      {TALLAS.map((talla) => (
                         <button
                           key={talla}
                           onClick={() => toggleTalla(talla)}
@@ -457,8 +446,8 @@ function CatalogoContent() {
                     <Slider
                       value={priceRange}
                       onValueChange={(value) => setPriceRange(value as number[])}
-                      max={100}
-                      step={5}
+                      max={1000}
+                      step={10}
                       className="mb-4"
                     />
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -467,34 +456,12 @@ function CatalogoContent() {
                     </div>
                   </div>
 
-                  {/* Otros */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Checkbox id="ofertas-desk" />
-                      <Label htmlFor="ofertas-desk" className="text-sm cursor-pointer">
-                        Solo ofertas
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Checkbox id="nuevos-desk" />
-                      <Label htmlFor="nuevos-desk" className="text-sm cursor-pointer">
-                        Productos nuevos
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Checkbox id="stock" />
-                      <Label htmlFor="stock" className="text-sm cursor-pointer">
-                        En stock
-                      </Label>
-                    </div>
-                  </div>
-
                   <Button
                     variant="outline"
                     className="w-full rounded-full"
                     onClick={() => {
                       setSelectedTallas([]);
-                      setPriceRange([0, 100]);
+                      setPriceRange([0, 1000]);
                     }}
                   >
                     Limpiar filtros
@@ -547,25 +514,26 @@ function CatalogoContent() {
                   )}>
                     {productosOrdenados.map((producto) => {
                       const price = producto.variantes?.[0]?.precio || producto.precioBase || 0;
-                      const hasDiscount = producto.precioOferta && producto.precioOferta < price;
+                      const hasDiscount = producto.precioOferta && Number(producto.precioOferta) < Number(price);
                       const discountPercentage = hasDiscount
-                        ? Math.round((1 - producto.precioOferta! / price) * 100)
+                        ? Math.round((1 - Number(producto.precioOferta) / Number(price)) * 100)
                         : 0;
+                      const imagenPrincipal = producto.imagenes?.[0] || producto.imagenPrincipal;
 
                       return (
-                        <article
+                        <Link
                           key={producto.id}
-                          className="group relative bg-white rounded-2xl overflow-hidden border border-stone-200 hover:border-stone-300 hover:shadow-lg transition-all duration-300 cursor-pointer"
-                          onClick={() => handleOpenProduct(producto)}
+                          href={`/producto/${producto.id}`}
+                          className="group relative bg-white rounded-2xl overflow-hidden border border-stone-200 hover:border-stone-300 hover:shadow-lg transition-all duration-300 block"
                         >
                           {/* Image */}
                           <div className={cn(
                             "relative overflow-hidden bg-stone-100",
                             viewMode === 'large' ? "aspect-[4/5]" : "aspect-square"
                           )}>
-                            {producto.imagenPrincipal ? (
+                            {imagenPrincipal ? (
                               <img
-                                src={producto.imagenPrincipal}
+                                src={imagenPrincipal}
                                 alt={producto.nombre}
                                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                                 loading="lazy"
@@ -593,6 +561,7 @@ function CatalogoContent() {
                             {/* Favorite Button */}
                             <button
                               onClick={(e) => {
+                                e.preventDefault();
                                 e.stopPropagation();
                                 toggleFavorite(producto.id);
                               }}
@@ -609,12 +578,12 @@ function CatalogoContent() {
                               )} />
                             </button>
 
-                            {/* Quick Add */}
-                            <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                              <Button className="w-full rounded-full gap-2 bg-foreground/95 backdrop-blur-sm hover:bg-foreground">
+                            {/* Quick Add - goes to product page */}
+                            <div className="absolute bottom-4 left-4 right-4 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                              <span className="inline-flex items-center justify-center gap-2 w-full rounded-full h-10 px-4 text-sm font-medium bg-foreground/95 backdrop-blur-sm text-background hover:bg-foreground transition-colors cursor-pointer">
                                 <ShoppingBag className="w-4 h-4" />
                                 Ver detalles
-                              </Button>
+                              </span>
                             </div>
                           </div>
 
@@ -673,28 +642,18 @@ function CatalogoContent() {
                             {/* Price */}
                             <div className="flex items-baseline gap-2">
                               <span className="text-lg font-semibold">
-                                ${price.toFixed(2)}
+                                ${Number(price).toFixed(2)}
                               </span>
                               {hasDiscount && producto.precioOferta && (
                                 <span className="text-sm text-muted-foreground line-through">
-                                  ${price.toFixed(2)}
+                                  ${Number(producto.precioOferta).toFixed(2)}
                                 </span>
                               )}
                             </div>
                           </div>
-                        </article>
+                        </Link>
                       );
                     })}
-                  </div>
-                )}
-
-                {/* Load More */}
-                {productosOrdenados.length > 0 && !isLoading && (
-                  <div className="text-center mt-12">
-                    <Button variant="outline" size="lg" className="rounded-full gap-2 px-8">
-                      Cargar más productos
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
                   </div>
                 )}
               </div>
@@ -702,13 +661,6 @@ function CatalogoContent() {
           </div>
         </section>
       </main>
-
-      {/* Quick View Modal */}
-      <ProductQuickView
-        producto={selectedProduct}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-      />
 
       {/* Store Location Modal */}
       <StoreLocationModal

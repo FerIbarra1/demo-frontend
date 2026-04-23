@@ -17,7 +17,10 @@ import { useKioskInactivity } from '@/lib/hooks';
 
 export function StoreGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, selectedTiendaId, isAuthenticated, setSelectedTienda } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const selectedTiendaId = useAuthStore((state) => state.selectedTiendaId);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const setSelectedTienda = useAuthStore((state) => state.setSelectedTienda);
   const { isKioskMode, tiendaId: kioskTiendaId } = useKioskStore();
   const [isStoreModalOpen, setIsStoreModalOpen] = useState(false);
 
@@ -41,7 +44,7 @@ export function StoreGuard({ children }: { children: React.ReactNode }) {
     }
 
     // Don't show modal on certain pages
-    const excludedPaths = ['/login', '/registro', '/tienda', '/configuracion', '/kiosko/setup'];
+    const excludedPaths = ['/login', '/registro', '/catalogo', '/configuracion', '/kiosko/setup'];
     if (excludedPaths.some(path => pathname?.startsWith(path))) {
       return;
     }

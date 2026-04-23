@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { Check, Minus, Plus, ShoppingBag, AlertCircle } from 'lucide-react';
+import { Check, Minus, Plus, ShoppingBag, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -26,6 +26,7 @@ export function ProductQuickView({ producto, isOpen, onClose }: ProductQuickView
   const [selectedTalla, setSelectedTalla] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const addItem = useCartStore((state) => state.addItem);
 
   // Reset state when modal opens with new product
@@ -33,6 +34,7 @@ export function ProductQuickView({ producto, isOpen, onClose }: ProductQuickView
     setSelectedColor(null);
     setSelectedTalla(null);
     setQuantity(1);
+    setActiveImageIndex(0);
   }, []);
 
   // Reset when product changes
@@ -44,6 +46,17 @@ export function ProductQuickView({ producto, isOpen, onClose }: ProductQuickView
 
   // Agrupar variantes por color y talla - siempre ejecutar hooks
   const variantes = producto?.variantes || [];
+
+  // Usar todas las imágenes del array del backend
+  const imagenes = useMemo(() => {
+    if (producto?.imagenes && producto.imagenes.length > 0) {
+      return producto.imagenes;
+    }
+    if (producto?.imagenPrincipal) {
+      return [producto.imagenPrincipal];
+    }
+    return [];
+  }, [producto]);
 
   const { colores, tallas, variantesMap } = useMemo(() => {
     const coloresMap = new Map<string, { nombre: string; hex: string }>();
@@ -93,9 +106,25 @@ export function ProductQuickView({ producto, isOpen, onClose }: ProductQuickView
     [selectedTalla, variantesMap]
   );
 
+  // Buscar índice de imagen que corresponde a un color
+  const findImageIndexForColor = useCallback((color: string): number => {
+    if (!imagenes.length) return 0;
+    const colorNormalized = color.toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '');
+    const idx = imagenes.findIndex(img =>
+      img && img.toLowerCase().includes(colorNormalized)
+    );
+    return idx >= 0 ? idx : 0;
+  }, [imagenes]);
+
   // Handlers
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
+
+    // Cambiar imagen al color seleccionado
+    const imgIndex = findImageIndexForColor(color);
+    setActiveImageIndex(imgIndex);
 
     if (selectedTalla && producto) {
       const variante = variantesMap.get(`${color}-${selectedTalla}`);
@@ -121,6 +150,9 @@ export function ProductQuickView({ producto, isOpen, onClose }: ProductQuickView
         .map((v) => v.color)[0];
       if (primerColor) {
         setSelectedColor(primerColor);
+        // Cambiar imagen al primer color disponible
+        const imgIndex = findImageIndexForColor(primerColor);
+        setActiveImageIndex(imgIndex);
       }
     }
   };
@@ -153,6 +185,8 @@ export function ProductQuickView({ producto, isOpen, onClose }: ProductQuickView
   const displayPrice = variantePrecio || productoPrecioBase;
   const hasDiscount = productoPrecioOferta && productoPrecioOferta < displayPrice;
 
+  const imagenActiva = imagenes[activeImageIndex] || producto.imagenPrincipal;
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl! w-[95vw]! max-h-[90vh] p-0 overflow-hidden">
@@ -161,11 +195,12 @@ export function ProductQuickView({ producto, isOpen, onClose }: ProductQuickView
         </DialogHeader>
 
         <div className="grid md:grid-cols-2 h-full">
-          {/* Left: Image */}
+          {/* Left: Image Gallery */}
           <div className="relative bg-muted aspect-square md:aspect-auto">
-            {producto.imagenPrincipal ? (
+            {/* Main Image */}
+            {imagenActiva ? (
               <img
-                src={producto.imagenPrincipal}
+                src={imagenActiva}
                 alt={producto.nombre}
                 className="w-full h-full object-cover"
               />
@@ -173,6 +208,26 @@ export function ProductQuickView({ producto, isOpen, onClose }: ProductQuickView
               <div className="w-full h-full flex items-center justify-center">
                 <ShoppingBag className="h-24 w-24 text-muted-foreground/50" />
               </div>
+            )}
+
+            {/* Navigation arrows */}
+            {imagenes.length > 1 && (
+              <>
+                <button
+                  onClick={() => setActiveImageIndex((i) => (i === 0 ? imagenes.length - 1 : i - 1))}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background shadow-sm transition-colors"
+                  aria-label="Imagen anterior"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setActiveImageIndex((i) => (i === imagenes.length - 1 ? 0 : i + 1))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background shadow-sm transition-colors"
+                  aria-label="Imagen siguiente"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </>
             )}
 
             {/* Badges */}
@@ -188,7 +243,40 @@ export function ProductQuickView({ producto, isOpen, onClose }: ProductQuickView
                 </Badge>
               )}
             </div>
+
+            {/* Image counter */}
+            {imagenes.length > 1 && (
+              <div className="absolute bottom-4 right-4 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium">
+                {activeImageIndex + 1} / {imagenes.length}
+              </div>
+            )}
           </div>
+
+          {/* Thumbnails - below image on mobile, or separate area */}
+          {imagenes.length > 1 && (
+            <div className="md:hidden flex gap-2 p-3 overflow-x-auto bg-background border-t">
+              {imagenes.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveImageIndex(idx)}
+                  className={cn(
+                    "w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all",
+                    activeImageIndex === idx
+                      ? "border-primary"
+                      : "border-transparent opacity-60 hover:opacity-100"
+                  )}
+                >
+                  {img ? (
+                    <img src={img} alt={`${producto.nombre} ${idx + 1}`} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-muted flex items-center justify-center">
+                      <ShoppingBag className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Right: Details */}
           <div className="flex flex-col h-full max-h-[50vh] md:max-h-[90vh]">
@@ -223,6 +311,32 @@ export function ProductQuickView({ producto, isOpen, onClose }: ProductQuickView
               <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
                 {producto.descripcion}
               </p>
+
+              {/* Thumbnails - desktop only */}
+              {imagenes.length > 1 && (
+                <div className="hidden md:flex gap-2 mb-6 overflow-x-auto">
+                  {imagenes.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveImageIndex(idx)}
+                      className={cn(
+                        "w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all",
+                        activeImageIndex === idx
+                          ? "border-primary"
+                          : "border-transparent opacity-60 hover:opacity-100"
+                      )}
+                    >
+                      {img ? (
+                        <img src={img} alt={`${producto.nombre} ${idx + 1}`} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-muted flex items-center justify-center">
+                          <ShoppingBag className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Color Selector */}
               {colores.length > 0 && (
@@ -372,12 +486,6 @@ export function ProductQuickView({ producto, isOpen, onClose }: ProductQuickView
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
-
-                  {selectedVariant && (
-                    <span className="text-sm text-muted-foreground ml-2">
-                      {stockDisponible} disponibles
-                    </span>
-                  )}
                 </div>
               </div>
             </div>

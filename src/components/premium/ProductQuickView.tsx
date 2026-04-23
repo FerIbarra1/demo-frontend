@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Check,
@@ -93,6 +93,19 @@ export function ProductQuickView({
 
   // Store
   const addItem = useCartStore((state) => state.addItem);
+  const mountedRef = useRef(true);
+  const addTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (addTimeoutRef.current) {
+        clearTimeout(addTimeoutRef.current);
+        addTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   // Reset state when modal opens
   useEffect(() => {
@@ -118,11 +131,16 @@ export function ProductQuickView({
 
   // Derived data
   const variantes = producto?.variantes || [];
+
+  // Usar todas las imágenes del array del backend
   const imagenes = useMemo(() => {
-    const imgs: string[] = [];
-    if (producto?.imagenPrincipal) imgs.push(producto.imagenPrincipal);
-    if (producto?.imagenSecundaria) imgs.push(producto.imagenSecundaria);
-    return imgs.length > 0 ? imgs : [null];
+    if (producto?.imagenes && producto.imagenes.length > 0) {
+      return producto.imagenes;
+    }
+    if (producto?.imagenPrincipal) {
+      return [producto.imagenPrincipal];
+    }
+    return [null];
   }, [producto]);
 
   // Group variants
@@ -181,10 +199,29 @@ export function ProductQuickView({
     [selectedTalla, variantesMap]
   );
 
+  // Buscar índice de imagen que corresponde a un color
+  const findImageIndexForColor = useCallback((color: string): number => {
+    if (!imagenes.length) return 0;
+    const colorNormalized = color.toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '');
+    const idx = imagenes.findIndex(img =>
+      img && img.toLowerCase().includes(colorNormalized)
+    );
+    return idx >= 0 ? idx : 0;
+  }, [imagenes]);
+
   // Handlers
   const handleColorSelect = (color: string) => {
     setDirection(color === selectedColor ? 0 : 1);
     setSelectedColor(color);
+
+    // Cambiar imagen al color seleccionado
+    const imgIndex = findImageIndexForColor(color);
+    if (imgIndex !== activeImageIndex) {
+      setDirection(imgIndex > activeImageIndex ? 1 : -1);
+      setActiveImageIndex(imgIndex);
+    }
 
     // Auto-select first available size if none selected
     if (!selectedTalla) {
@@ -211,7 +248,15 @@ export function ProductQuickView({
     if (!selectedColor) {
       const firstColor = variantes
         .filter((v) => v.talla === talla && v.stockDisponible > 0)[0];
-      if (firstColor) setSelectedColor(firstColor.color);
+      if (firstColor) {
+        setSelectedColor(firstColor.color);
+        // Cambiar imagen al primer color disponible
+        const imgIndex = findImageIndexForColor(firstColor.color);
+        if (imgIndex !== activeImageIndex) {
+          setDirection(imgIndex > activeImageIndex ? 1 : -1);
+          setActiveImageIndex(imgIndex);
+        }
+      }
     }
   };
 
@@ -220,23 +265,32 @@ export function ProductQuickView({
 
     setIsAdding(true);
 
-    // Simulate API delay for better UX
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    // Simulate API delay for better UX - cleanup with ref
+    await new Promise<void>((resolve) => {
+      addTimeoutRef.current = setTimeout(() => {
+        addTimeoutRef.current = null;
+        resolve();
+      }, 600);
+    });
+
+    if (!mountedRef.current) return;
 
     addItem(producto, selectedVariant, quantity);
 
-    toast.success("Agregado al carrito", {
-      description: `${producto.nombre} — ${quantity} × ${selectedVariant.talla} · ${selectedVariant.color}`,
-      action: {
-        label: "Ver carrito",
-        onClick: () => {
-          // Could open cart drawer
+    if (mountedRef.current) {
+      toast.success("Agregado al carrito", {
+        description: `${producto.nombre} — ${quantity} × ${selectedVariant.talla} · ${selectedVariant.color}`,
+        action: {
+          label: "Ver carrito",
+          onClick: () => {
+            // Could open cart drawer
+          },
         },
-      },
-    });
+      });
 
-    setIsAdding(false);
-    onClose();
+      setIsAdding(false);
+      onClose();
+    }
   };
 
   // Calculated values
@@ -591,16 +645,16 @@ export function ProductQuickView({
                     </button>
                   </div>
 
-                  {selectedVariant && (
+                  {/* {selectedVariant && (
                     <span className="text-sm text-muted-foreground">
                       {stockDisponible} disponibles
                     </span>
-                  )}
+                  )} */}
                 </div>
               </motion.div>
 
               {/* Trust Badges */}
-              <motion.div
+              {/* <motion.div
                 variants={slideInRight}
                 className="flex flex-wrap gap-4 py-4 border-t border-border/50"
               >
@@ -612,7 +666,7 @@ export function ProductQuickView({
                   <Shield className="w-4 h-4" />
                   <span>Garantía 30 días</span>
                 </div>
-              </motion.div>
+              </motion.div> */}
             </div>
 
             {/* Fixed Footer */}
@@ -676,9 +730,9 @@ export function ProductQuickView({
               </Button>
 
               {/* Additional Info */}
-              <p className="text-xs text-center text-muted-foreground">
+              {/* <p className="text-xs text-center text-muted-foreground">
                 Envío en 24-48h · Devoluciones gratuitas en 30 días
-              </p>
+              </p> */}
             </div>
           </motion.div>
         </div>

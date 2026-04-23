@@ -317,7 +317,7 @@ export default function NosotrosPage() {
             camisetas favoritas.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/tienda">
+            <Link href="/catalogo">
               <Button size="lg" className="rounded-full px-8">
                 Ver Catálogo
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -343,11 +343,11 @@ export default function NosotrosPage() {
               </p>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-4">Tienda</p>
+              <p className="font-semibold text-sm mb-4">Catálogo</p>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link
-                    href="/tienda"
+                    href="/catalogo"
                     className="hover:text-accent transition-colors"
                   >
                     Colecciones
@@ -355,7 +355,7 @@ export default function NosotrosPage() {
                 </li>
                 <li>
                   <Link
-                    href="/tienda"
+                    href="/catalogo"
                     className="hover:text-accent transition-colors"
                   >
                     Ofertas
@@ -363,7 +363,7 @@ export default function NosotrosPage() {
                 </li>
                 <li>
                   <Link
-                    href="/tienda"
+                    href="/catalogo"
                     className="hover:text-accent transition-colors"
                   >
                     Nuevos
