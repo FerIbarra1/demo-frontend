@@ -137,10 +137,10 @@ export default function CarritoPage() {
                 <span>Subtotal</span>
                 <span>${total.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between">
+              {/* <div className="flex justify-between">
                 <span>Envío</span>
                 <span className="text-green-600">Gratis</span>
-              </div>
+              </div> */}
               <Separator />
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>

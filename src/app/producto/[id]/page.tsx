@@ -33,7 +33,6 @@ import {
   Footer,
   ProductCard,
 } from "@/components/premium";
-import { SkeletonCard } from "@/components/common/SkeletonGrid";
 import { ErrorDisplay, useSafeData } from "@/components/common/ErrorBoundary";
 import { useProducto, useCatalogo } from "@/lib/hooks";
 
@@ -622,11 +621,11 @@ function ProductoDetalleContent({
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
-                {selectedVariant && (
+                {/* {selectedVariant && (
                   <span className="text-sm text-muted-foreground">
                     {stockDisponible} disponibles
                   </span>
-                )}
+                )} */}
               </div>
             </div>
 
@@ -708,7 +707,7 @@ function ProductoDetalleContent({
             )}
 
             {/* Trust badges */}
-            <div className="grid grid-cols-2 gap-3 mb-8">
+            {/* <div className="grid grid-cols-2 gap-3 mb-8">
               <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-stone-200">
                 <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center">
                   <Truck className="w-5 h-5 text-stone-600" />
@@ -731,10 +730,10 @@ function ProductoDetalleContent({
                   </p>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Product Details */}
-            <div className="space-y-4">
+            {/* <div className="space-y-4">
               <h3 className="font-medium">Detalles del producto</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="bg-white p-3 rounded-xl border border-stone-200">
@@ -754,7 +753,7 @@ function ProductoDetalleContent({
                   <p className="font-medium">{colores.length} disponibles</p>
                 </div>
               </div>
-            </div>
+            </div> */}
           </motion.div>
         </div>
       </div>
