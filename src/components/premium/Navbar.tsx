@@ -340,11 +340,11 @@ export function Navbar() {
               className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center group"
             >
               <Image
-                src="/PTM-Logo.png"
+                src="/Logo.png"
                 alt="Punto Textil Mayoreo"
                 width={500}
                 height={500}
-                className="h-20 w-auto md:h-30 object-contain object-center transition-transform duration-300 group-hover:scale-105"
+                className="h-10 w-auto md:h-12 object-contain object-center transition-transform duration-300 group-hover:scale-105"
                 priority
               />
               {/* {(userRole && userRole !== "CLIENTE") || isKioskMode ? (

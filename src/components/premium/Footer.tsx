@@ -58,11 +58,11 @@ export function Footer() {
           <div className="lg:col-span-2 flex flex-col items-center justify-center">
             <Link href="/" className="inline-block mb-6">
               <Image
-                src="/PTM-Logo.png"
+                src="/Logo.png"
                 alt="Punto Textil Mayoreo"
                 width={500}
                 height={500}
-                className="h-20 w-auto md:h-30 object-contain object-center transition-transform duration-300 group-hover:scale-105"
+                className="h-18 w-auto md:h-20 object-contain object-center transition-transform duration-300 group-hover:scale-105"
                 priority
               />
             </Link>

@@ -9,14 +9,14 @@ export default function AuthLayout({
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Minimal Header */}
-      <header>
+      <header className="px-6 md:px-12 py-4">
         <Link href="/" className="inline-flex items-center gap-2 group">
           <Image
-            src="/PTM-Logo.png"
+            src="/Logo.png"
             alt="Punto Textil Mayoreo"
             width={500}
             height={500}
-            className="h-20 w-auto md:h-30 object-contain object-center transition-transform duration-300 group-hover:scale-105"
+            className="h-15 w-auto md:h-15 object-contain object-center transition-transform duration-300 group-hover:scale-105"
             priority
           />
         </Link>
@@ -30,7 +30,7 @@ export default function AuthLayout({
       {/* Minimal Footer */}
       <footer className="py-6 px-6 md:px-12">
         <p className="text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Demo. Todos los derechos reservados.
+          © {new Date().getFullYear()} Punto Textil Mayoreo. Todos los derechos reservados.
         </p>
       </footer>
 
