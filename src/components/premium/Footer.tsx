@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import Image from "next/image";
 import { ArrowUpRight, Globe, Mail, MessageCircle, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -55,17 +55,17 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
           {/* Brand Column */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 flex flex-col items-center justify-center">
             <Link href="/" className="inline-block mb-6">
-              <span className="font-serif text-3xl font-medium">Demo</span>
-              <span className="text-xs tracking-[0.3em] uppercase text-muted-foreground ml-1">
-                Shop
-              </span>
+              <Image
+                src="/PTM-Logo.png"
+                alt="Punto Textil Mayoreo"
+                width={500}
+                height={500}
+                className="h-20 w-auto md:h-30 object-contain object-center transition-transform duration-300 group-hover:scale-105"
+                priority
+              />
             </Link>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-6 max-w-sm">
-              Camisetas premium para quienes valoran la calidad, el diseño único
-              y el estilo auténtico. Hecho con dedicación desde 2020.
-            </p>
 
             {/* Social Links */}
             <div className="flex items-center gap-3">
@@ -78,7 +78,7 @@ export function Footer() {
                   className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center",
                     "bg-background border border-border",
-                    "text-muted-foreground hover:text-foreground hover:border-foreground transition-colors"
+                    "text-muted-foreground hover:text-foreground hover:border-foreground transition-colors",
                   )}
                   aria-label={social.label}
                 >
@@ -112,7 +112,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-border mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {currentYear} Demo Shop. Todos los derechos reservados.
+            © {currentYear} Punto Textil Mayoreo. Todos los derechos reservados.
           </p>
 
           <div className="flex items-center gap-6">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function AuthLayout({
   children,
@@ -8,11 +9,16 @@ export default function AuthLayout({
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Minimal Header */}
-      <header className="py-6 px-6 md:px-12">
+      <header>
         <Link href="/" className="inline-flex items-center gap-2 group">
-          <span className="font-serif text-2xl tracking-tight text-foreground group-hover:text-foreground/70 transition-colors">
-            Demo
-          </span>
+          <Image
+            src="/PTM-Logo.png"
+            alt="Punto Textil Mayoreo"
+            width={500}
+            height={500}
+            className="h-20 w-auto md:h-30 object-contain object-center transition-transform duration-300 group-hover:scale-105"
+            priority
+          />
         </Link>
       </header>
 

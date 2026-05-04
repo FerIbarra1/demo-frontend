@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Search,
@@ -338,12 +339,19 @@ export function Navbar() {
               href={roleConfig.logoHref}
               className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center group"
             >
-              <span className="font-serif text-2xl md:text-3xl font-medium tracking-tight text-foreground transition-transform duration-300 group-hover:scale-105">
-                {roleConfig.appName}
-              </span>
-              <span className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-foreground-muted -mt-1">
-                {roleConfig.appSubtitle}
-              </span>
+              <Image
+                src="/PTM-Logo.png"
+                alt="Punto Textil Mayoreo"
+                width={500}
+                height={500}
+                className="h-20 w-auto md:h-30 object-contain object-center transition-transform duration-300 group-hover:scale-105"
+                priority
+              />
+              {/* {(userRole && userRole !== "CLIENTE") || isKioskMode ? (
+                <span className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-foreground-muted -mt-0.5 max-w-[220px] truncate text-center">
+                  {roleConfig.appSubtitle}
+                </span>
+              ) : null} */}
             </Link>
 
             {/* Right side - Actions */}
