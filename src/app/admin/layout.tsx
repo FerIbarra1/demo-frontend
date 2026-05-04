@@ -1,23 +1,30 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { LayoutDashboard, Store, Package, Users, BarChart3, LogOut } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
-import { useLogout } from '@/lib/hooks';
-import { useAuthStore } from '@/lib/stores/auth';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  LayoutDashboard,
+  Store,
+  Package,
+  Users,
+  BarChart3,
+  LogOut,
+} from "lucide-react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { useLogout } from "@/lib/hooks";
+import { useAuthStore } from "@/lib/stores/auth";
 
 // Force dynamic rendering to prevent static generation issues
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const navItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/tiendas', label: 'Tiendas', icon: Store },
-  { href: '/admin/productos', label: 'Productos', icon: Package },
-  { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
-  { href: '/admin/reportes', label: 'Reportes', icon: BarChart3 },
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/tiendas", label: "Tiendas", icon: Store },
+  { href: "/admin/productos", label: "Productos", icon: Package },
+  { href: "/admin/usuarios", label: "Usuarios", icon: Users },
+  { href: "/admin/reportes", label: "Reportes", icon: BarChart3 },
 ];
 
 export default function AdminLayout({
@@ -33,17 +40,17 @@ export default function AdminLayout({
     if (!_hasHydrated) return;
 
     if (!isAuthenticated) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
 
-    if (user?.rol !== 'ADMIN') {
-      router.push('/unauthorized');
+    if (user?.rol !== "ADMIN") {
+      router.push("/unauthorized");
       return;
     }
   }, [isAuthenticated, user, router, _hasHydrated]);
 
-  if (!_hasHydrated || !isAuthenticated || user?.rol !== 'ADMIN') {
+  if (!_hasHydrated || !isAuthenticated || user?.rol !== "ADMIN") {
     return null;
   }
 
@@ -52,9 +59,14 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside className="w-full lg:w-64 bg-white border-r lg:h-screen lg:sticky lg:top-0 flex-shrink-0">
         <div className="p-6">
-          <Link href="/admin" className="flex items-center gap-2">
-            <LayoutDashboard className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold">Demo Admin</span>
+          <Link href="/admin" className="flex items-center gap-2 justify-center">
+            <Image
+              src="/Logo.png"
+              alt="Punto Textil Mayoreo"
+              width={500}
+              height={500}
+              className="h-15 w-auto object-contain"
+            />
           </Link>
         </div>
 
@@ -63,10 +75,7 @@ export default function AdminLayout({
             const Icon = item.icon;
             return (
               <Link key={item.href} href={item.href}>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                >
+                <Button variant="ghost" className="w-full justify-start">
                   <Icon className="mr-2 h-4 w-4" />
                   {item.label}
                 </Button>
@@ -89,13 +98,12 @@ export default function AdminLayout({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <main className="flex-1 bg-muted/30 p-4 lg:p-8">
-          {children}
-        </main>
+        <main className="flex-1 bg-muted/30 p-4 lg:p-8">{children}</main>
 
         <footer className="bg-white border-t py-4">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Demo - Panel de Administración
+            © {new Date().getFullYear()} Punto Textil Mayoreo - Panel de
+            Administración
           </div>
         </footer>
       </div>
